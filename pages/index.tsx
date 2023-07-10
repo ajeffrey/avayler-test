@@ -1,17 +1,12 @@
 import React from 'react';
 import Head from 'next/head';
-import Image from 'next/image';
 import styles from '../styles/Home.module.css';
 import { useDataLoader } from '../lib/useDataLoader';
 import { getSpacexData } from '../lib/getSpacexData';
 import { useIndex } from '../lib/useIndex';
 import * as Types from '../types';
+import { QUERY_LAUNCHES_URL, QUERY_PAYLOADS_URL, QUERY_CORES_URL } from '../constants';
 import { Launch } from '../components/Launch';
-
-const API_URL = 'https://api.spacexdata.com';
-const QUERY_LAUNCHES_URL = `${API_URL}/v5/launches/query`
-const QUERY_PAYLOADS_URL = `${API_URL}/v4/payloads/query`;
-const QUERY_CORES_URL = `${API_URL}/v4/cores/query`;
 
 interface SearchResults<T> {
   docs: T[];
@@ -73,7 +68,7 @@ export default function Home() {
   const coresIndex = useIndex(cores.data?.docs, 'id');
   
   if(!(payloadsIndex && coresIndex)) {
-    return <div className={styles.loading}>loading...</div>;
+    return <div className={styles.loading} data-testid="loading">loading...</div>;
   }
 
   const error = launches.error || payloads.error;
@@ -81,17 +76,14 @@ export default function Home() {
     return <div>Error: {error}</div>;
   }
 
-  console.log('launches', launches, 'payloads', payloadsIndex, 'cores', coresIndex);
-
   return (
-    <div className={styles.background}>
+    <div className={styles.background} data-testid="launches">
       <Head>
         <title>SpaceX Launches</title>
       </Head>
       <div className={styles.launches}>
         {(launches.data?.docs || []).map(launch => {
           const core = launch.cores.length > 0 ? coresIndex[launch.cores[0].core] : null;
-          if(launch.cores.length > 0) console.log('core', launch.cores[0].core, coresIndex[launch.cores[0].core])
           const payloads = launch.payloads.map(id => payloadsIndex[id]).filter(Boolean);
           return <Launch key={launch.id} {...{ launch, core, payloads }} />
         })}

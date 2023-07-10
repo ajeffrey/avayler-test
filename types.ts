@@ -34,6 +34,5 @@ export interface Payload {
 
 export interface Core {
   id: string;
-  name: string;
   serial: string;
 }
